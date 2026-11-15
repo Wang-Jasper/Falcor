@@ -141,7 +141,7 @@ public:
     bool getShowUI() const { return mUI.showUI; }
 
     /// Returns true if the application should terminate.
-    /// This is true if the window was closed or escape was pressed.
+    /// This is true if close() was called or the window was closed.
     bool shouldClose() const { return mShouldClose || (mpWindow && mpWindow->shouldClose()); }
 
     std::function<bool(const KeyboardEvent&)> getKeyboardEventcallback() const { return mKeyboardEventCallback; }

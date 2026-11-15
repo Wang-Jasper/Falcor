@@ -493,11 +493,11 @@ Device::Device(const Desc& desc) : mDesc(desc)
     extDesc.rootParameterShaderAttributeName = "root";
     extendedDescs.push_back(&extDesc);
 #if FALCOR_HAS_D3D12
-    // Add extended descs for experimental API features.
+    // Only request experimental API features when explicitly configured.
     gfx::D3D12ExperimentalFeaturesDesc experimentalFeaturesDesc = {};
     experimentalFeaturesDesc.numFeatures = (uint32_t)mDesc.experimentalFeatures.size();
     experimentalFeaturesDesc.featureIIDs = mDesc.experimentalFeatures.data();
-    if (gfxDesc.deviceType == gfx::DeviceType::DirectX12)
+    if (gfxDesc.deviceType == gfx::DeviceType::DirectX12 && !mDesc.experimentalFeatures.empty())
         extendedDescs.push_back(&experimentalFeaturesDesc);
 #endif
     gfxDesc.extendedDescCount = extendedDescs.size();

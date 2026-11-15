@@ -63,6 +63,11 @@ public:
             Window* pWindow = (Window*)glfwGetWindowUserPointer(pGlfwWindow);
             if (pWindow != nullptr)
             {
+                if (event.type == KeyboardEvent::Type::KeyPressed && event.key == Input::Key::Escape && pWindow->isMouseCaptured())
+                {
+                    pWindow->setMouseCaptured(false);
+                    return;
+                }
                 pWindow->mpCallbacks->handleKeyboardEvent(event);
             }
         }
@@ -81,6 +86,12 @@ public:
         }
     }
 
+    static void windowFocusCallback(GLFWwindow* pGlfwWindow, int focused)
+    {
+        if (auto pWindow = (Window*)glfwGetWindowUserPointer(pGlfwWindow); pWindow && !focused)
+            pWindow->setMouseCaptured(false);
+    }
+
     static void mouseMoveCallback(GLFWwindow* pGlfwWindow, double mouseX, double mouseY)
     {
         Window* pWindow = (Window*)glfwGetWindowUserPointer(pGlfwWindow);
@@ -92,6 +103,7 @@ public:
             event.pos = calcMousePos(mouseX, mouseY, pWindow->getMouseScale());
             event.screenPos = {mouseX, mouseY};
             event.wheelDelta = float2(0, 0);
+            event.captured = pWindow->isMouseCaptured();
 
             pWindow->mpCallbacks->handleMouseEvent(event);
         }
@@ -129,6 +141,7 @@ public:
             double x, y;
             glfwGetCursorPos(pGlfwWindow, &x, &y);
             event.pos = calcMousePos(x, y, pWindow->getMouseScale());
+            event.captured = pWindow->isMouseCaptured();
 
             pWindow->mpCallbacks->handleMouseEvent(event);
         }
@@ -145,6 +158,7 @@ public:
             glfwGetCursorPos(pGlfwWindow, &x, &y);
             event.pos = calcMousePos(x, y, pWindow->getMouseScale());
             event.wheelDelta = (float2(float(scrollX), float(scrollY)));
+            event.captured = pWindow->isMouseCaptured();
 
             pWindow->mpCallbacks->handleMouseEvent(event);
         }
@@ -436,6 +450,7 @@ Window::Window(const Desc& desc, ICallbacks* pCallbacks)
 
     // Set callbacks
     glfwSetWindowSizeCallback(mpGLFWWindow, ApiCallbacks::windowSizeCallback);
+    glfwSetWindowFocusCallback(mpGLFWWindow, ApiCallbacks::windowFocusCallback);
     glfwSetKeyCallback(mpGLFWWindow, ApiCallbacks::keyboardCallback);
     glfwSetMouseButtonCallback(mpGLFWWindow, ApiCallbacks::mouseButtonCallback);
     glfwSetCursorPosCallback(mpGLFWWindow, ApiCallbacks::mouseMoveCallback);
@@ -538,6 +553,26 @@ void Window::setWindowIcon(const std::filesystem::path& path)
 #if FALCOR_WINDOWS
     Falcor::setWindowIcon(path, mApiHandle);
 #endif
+}
+
+bool Window::isMouseCaptured() const
+{
+    return glfwGetInputMode(mpGLFWWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+}
+
+void Window::setMouseCaptured(bool captured)
+{
+    if (captured == isMouseCaptured()) return;
+    glfwSetInputMode(mpGLFWWindow, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+    double x, y;
+    glfwGetCursorPos(mpGLFWWindow, &x, &y);
+    MouseEvent event{};
+    event.type = MouseEvent::Type::CaptureChanged;
+    event.pos = float2(float(x), float(y)) * mMouseScale;
+    event.screenPos = {x, y};
+    event.captured = captured;
+    mpCallbacks->handleMouseEvent(event);
 }
 
 void Window::pollForEvents()

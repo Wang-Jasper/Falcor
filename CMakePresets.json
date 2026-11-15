@@ -94,7 +94,10 @@
             "displayName": "Windows Ninja/MSVC",
             "inherits": [
                 "windows-ninja-msvc-base"
-            ]
+            ],
+            "environment": {
+                "VSLANG": "1033"
+            }
         },
         {
             "name": "windows-ninja-msvc-ci",

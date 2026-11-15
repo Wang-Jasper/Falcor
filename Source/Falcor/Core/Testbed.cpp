@@ -229,17 +229,13 @@ void Testbed::handleRenderFrame() {}
 
 void Testbed::handleKeyboardEvent(const KeyboardEvent& keyEvent)
 {
-    if (mpGui->onKeyboardEvent(keyEvent))
+    if (!mpWindow->isMouseCaptured() && mpGui->onKeyboardEvent(keyEvent))
         return;
 
     if (keyEvent.type == KeyboardEvent::Type::KeyPressed)
     {
         switch (keyEvent.key)
         {
-        case Input::Key::Escape:
-            interrupt();
-            close();
-            break;
         case Input::Key::F2:
             mUI.showUI = !mUI.showUI;
             break;
@@ -264,12 +260,18 @@ void Testbed::handleMouseEvent(const MouseEvent& mouseEvent)
 {
     if (mpGui->onMouseEvent(mouseEvent))
         return;
+    if (mouseEvent.captured || mouseEvent.type == MouseEvent::Type::CaptureChanged)
+    {
+        if (mpScene) mpScene->onMouseEvent(mouseEvent);
+        return;
+    }
     if (mMouseEventCallback && mMouseEventCallback(mouseEvent))
         return;
     if (mpRenderGraph && mpRenderGraph->onMouseEvent(mouseEvent))
         return;
-    if (mpScene && mpScene->onMouseEvent(mouseEvent))
-        return;
+    if (mpScene && mpScene->onMouseEvent(mouseEvent) && mouseEvent.type == MouseEvent::Type::ButtonDown &&
+        mouseEvent.button == Input::MouseButton::Left && mpScene->getCameraControllerType() != Scene::CameraControllerType::Orbiter)
+        mpWindow->setMouseCaptured(true);
 }
 
 void Testbed::handleGamepadEvent(const GamepadEvent& gamepadEvent)
@@ -398,7 +400,7 @@ void Testbed::renderUI()
             ImGui::Text(
                 "Help\n"
                 "\n"
-                "ESC - Exit (or return to Python interpreter)\n"
+                "Left-click viewport - Capture mouse; Esc - Release mouse\n"
                 "F1  - Show this help screen\n"
                 "F2  - Show/hide UI\n"
                 "F5  - Reload shaders\n"

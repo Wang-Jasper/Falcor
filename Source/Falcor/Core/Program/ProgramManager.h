@@ -31,6 +31,7 @@
 #include "Core/API/fwd.h"
 
 #include <memory>
+#include <string_view>
 
 namespace Falcor
 {
@@ -65,6 +66,8 @@ public:
     void unregisterProgramForReload(Program* program);
 
     ref<const ProgramVersion> createProgramVersion(const Program& program, std::string& log) const;
+
+    static void logProgramWarnings(std::string_view programName, const std::string& log);
 
     ref<const ProgramKernels> createProgramKernels(
         const Program& program,

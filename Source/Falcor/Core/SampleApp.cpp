@@ -185,7 +185,7 @@ void SampleApp::handleRenderFrame()
 
 void SampleApp::handleKeyboardEvent(const KeyboardEvent& keyEvent)
 {
-    if (mShowUI && mpGui->onKeyboardEvent(keyEvent))
+    if (mShowUI && !mpWindow->isMouseCaptured() && mpGui->onKeyboardEvent(keyEvent))
         return;
     mInputState.onKeyEvent(keyEvent);
     if (onKeyEvent(keyEvent))
@@ -238,9 +238,6 @@ void SampleApp::handleKeyboardEvent(const KeyboardEvent& keyEvent)
                 onHotReload(reloaded);
             }
             break;
-            case Input::Key::Escape:
-                mpWindow->shutdown();
-                break;
             case Input::Key::Pause:
             case Input::Key::Space:
                 mClock.isPaused() ? mClock.play() : mClock.pause();
@@ -254,8 +251,9 @@ void SampleApp::handleKeyboardEvent(const KeyboardEvent& keyEvent)
 
 void SampleApp::handleMouseEvent(const MouseEvent& mouseEvent)
 {
-    if (mShowUI && mpGui->onMouseEvent(mouseEvent))
+    if ((mShowUI || mouseEvent.type == MouseEvent::Type::CaptureChanged) && mpGui->onMouseEvent(mouseEvent))
         return;
+    if (mouseEvent.type == MouseEvent::Type::CaptureChanged) mInputState = {};
     mInputState.onMouseEvent(mouseEvent);
     if (onMouseEvent(mouseEvent))
         return;
@@ -348,7 +346,7 @@ bool screenSizeUI(Gui::Widgets& widget, uint2& screenDims)
 std::string SampleApp::getKeyboardShortcutsStr()
 {
     constexpr char help[] =
-        "ESC - Quit\n"
+        "Left-click viewport - Capture mouse; Esc - Release mouse\n"
         "F2 - Show/hide UI\n"
         "F3 - Capture current camera location\n"
         "F5 - Reload shaders\n"

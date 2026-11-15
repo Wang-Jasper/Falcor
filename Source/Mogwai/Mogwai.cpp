@@ -764,13 +764,20 @@ namespace Mogwai
 
     bool Renderer::onMouseEvent(const MouseEvent& mouseEvent)
     {
+        if (mouseEvent.captured || mouseEvent.type == MouseEvent::Type::CaptureChanged)
+            return mpScene ? mpScene->onMouseEvent(mouseEvent) : false;
+
         for (auto& pe : mpExtensions)
         {
             if (pe->mouseEvent(mouseEvent)) return true;
         }
 
         if (mGraphs.size()) mGraphs[mActiveGraph].pGraph->onMouseEvent(mouseEvent);
-        return mpScene ? mpScene->onMouseEvent(mouseEvent) : false;
+        bool handled = mpScene ? mpScene->onMouseEvent(mouseEvent) : false;
+        if (handled && mouseEvent.type == MouseEvent::Type::ButtonDown && mouseEvent.button == Input::MouseButton::Left &&
+            mpScene->getCameraControllerType() != Scene::CameraControllerType::Orbiter)
+            getWindow()->setMouseCaptured(true);
+        return handled;
     }
 
     bool Renderer::onKeyEvent(const KeyboardEvent& keyEvent)

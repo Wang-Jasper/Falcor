@@ -1360,6 +1360,19 @@ bool Gui::onMouseEvent(const MouseEvent& event)
 {
     ImGui::SetCurrentContext(mpWrapper->mpContext);
     ImGuiIO& io = ImGui::GetIO();
+    if (event.captured || event.type == MouseEvent::Type::CaptureChanged)
+    {
+        mpWrapper->mMouseEvents = {};
+        for (auto& button : io.MouseDown) button = false;
+        if (event.type == MouseEvent::Type::CaptureChanged)
+        {
+            for (auto& key : io.KeysDown) key = false;
+            io.KeyCtrl = io.KeyAlt = io.KeyShift = io.KeySuper = false;
+        }
+        io.MousePos = event.captured ? ImVec2(-FLT_MAX, -FLT_MAX)
+                                    : ImVec2(event.pos.x * io.DisplaySize.x, event.pos.y * io.DisplaySize.y);
+        return false;
+    }
     switch (event.type)
     {
     case MouseEvent::Type::ButtonDown:

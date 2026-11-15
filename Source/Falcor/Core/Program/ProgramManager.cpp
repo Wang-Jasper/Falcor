@@ -32,9 +32,41 @@
 #include "Utils/Timing/CpuTimer.h"
 
 #include <slang.h>
+#include <mutex>
+#include <regex>
+#include <unordered_set>
 
 namespace Falcor
 {
+
+void ProgramManager::logProgramWarnings(std::string_view programName, const std::string& log)
+{
+    static const std::regex kDiagnosticPattern(
+        R"((?:^|\n)((?:[^\r\n]+\([0-9]+\): )?(?:warning ([0-9]+)|warning|error(?: [0-9]+)?|note(?: [0-9]+)?):))"
+    );
+    static std::mutex sWarningMutex;
+    static std::unordered_set<std::string> sSeenWarningCodes;
+
+    auto diagnostic = std::sregex_iterator(log.begin(), log.end(), kDiagnosticPattern);
+    const auto end = std::sregex_iterator();
+    std::string filteredLog = log.substr(0, diagnostic == end ? log.size() : diagnostic->position(1));
+
+    {
+        std::lock_guard lock(sWarningMutex);
+        while (diagnostic != end)
+        {
+            const size_t start = diagnostic->position(1);
+            const auto code = (*diagnostic)[2];
+            ++diagnostic;
+            const size_t stop = diagnostic == end ? log.size() : diagnostic->position(1);
+            if (!code.matched || sSeenWarningCodes.insert(code.str()).second)
+                filteredLog.append(log, start, stop - start);
+        }
+    }
+
+    if (!filteredLog.empty())
+        logWarning("Warnings in program:\n{}\n{}", programName, filteredLog);
+}
 
 inline SlangStage getSlangStage(ShaderType type)
 {

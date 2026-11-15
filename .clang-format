@@ -54,7 +54,7 @@ PenaltyBreakTemplateDeclaration: 100000
 Language: CSharp
 BasedOnStyle: Chromium
 IndentWidth: 4
-ColumnLimit: 140
+ColumnLimit: 0
 AccessModifierOffset: -4
 SortIncludes: false
 SortUsingDeclarations: false

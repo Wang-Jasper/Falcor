@@ -154,6 +154,7 @@ namespace Falcor
         - W/S/A/D to move forward/backward/strafe left/strafe right.
         - Q/E to move down/up.
         - Left mouse button + mouse movement to rotate camera.
+        - When the window captures the mouse, mouse movement rotates without holding a button.
         - Right mouse button + mouse movement to roll camera (for 6DoF camera controller only).
         - Shift for faster movement.
         - Ctrl for slower movement.
@@ -186,12 +187,13 @@ namespace Falcor
         void resetInputState() override;
 
     private:
+        bool mMouseCaptured = false;
         bool mIsLeftButtonDown = false;
         bool mIsRightButtonDown = false;
         bool mShouldRotate = false;
 
         float2 mLastMousePos;
-        float2 mMouseDelta;
+        float2 mMouseDelta = float2(0.f);
 
         bool mGamepadPresent = false;
         float2 mGamepadLeftStick;

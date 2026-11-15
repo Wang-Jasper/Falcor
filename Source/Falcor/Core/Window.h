@@ -149,6 +149,10 @@ public:
      */
     void setWindowIcon(const std::filesystem::path& path);
 
+    /// Hide and lock the mouse for camera control, or restore normal cursor behavior.
+    void setMouseCaptured(bool captured);
+    bool isMouseCaptured() const;
+
     /**
      * Get the native window handle
      */

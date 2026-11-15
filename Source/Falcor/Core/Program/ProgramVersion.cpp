@@ -32,7 +32,6 @@
 #include "Core/Error.h"
 #include "Core/API/Device.h"
 #include "Core/API/ParameterBlock.h"
-#include "Utils/Logger.h"
 
 #include <slang.h>
 
@@ -232,9 +231,7 @@ ref<const ProgramKernels> ProgramVersion::getKernels(Device* pDevice, ProgramVar
             // Success
 
             if (!log.empty())
-            {
-                logWarning("Warnings in program:\n{}\n{}", getName(), log);
-            }
+                ProgramManager::logProgramWarnings(getName(), log);
 
             mpKernels[specializationKey] = pKernels;
             return pKernels;

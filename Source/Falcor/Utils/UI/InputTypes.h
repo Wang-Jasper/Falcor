@@ -197,18 +197,20 @@ struct MouseEvent
      */
     enum class Type
     {
-        ButtonDown, ///< Mouse button was pressed
-        ButtonUp,   ///< Mouse button was released
-        Move,       ///< Mouse cursor position changed
-        Wheel       ///< Mouse wheel was scrolled
+        ButtonDown,    ///< Mouse button was pressed
+        ButtonUp,      ///< Mouse button was released
+        Move,          ///< Mouse cursor position changed
+        Wheel,         ///< Mouse wheel was scrolled
+        CaptureChanged ///< Mouse capture was enabled or disabled.
     };
 
     Type type;                 ///< Event Type.
-    float2 pos;                ///< Normalized coordinates x,y in range [0, 1]. (0,0) is the top-left corner of the window.
-    float2 screenPos;          ///< Screen-space coordinates in range [0, clientSize]. (0,0) is the top-left corner of the window.
+    float2 pos;                ///< Normalized coordinates, normally in [0, 1]; unbounded when captured. (0,0) is the top-left corner.
+    float2 screenPos;          ///< Screen-space coordinates, normally in [0, clientSize]; unbounded when captured.
     float2 wheelDelta;         ///< If the current event is CMouseEvent#Type#Wheel, the change in wheel scroll. Otherwise zero.
     Input::ModifierFlags mods; ///< Keyboard modifier flags. Only valid if the event Type is one the button events
     Input::MouseButton button; ///< Which button was active. Only valid if the event Type is ButtonDown or ButtonUp.
+    bool captured = false;     ///< Whether the window has captured the mouse for camera control.
 };
 
 struct KeyboardEvent

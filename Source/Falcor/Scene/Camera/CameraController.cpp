@@ -256,11 +256,11 @@ namespace Falcor
 
                 float3 viewDir = normalize(camTarget - camPos);
 
-                if (mIsLeftButtonDown || anyGamepadRotation)
+                if (mMouseCaptured || mIsLeftButtonDown || anyGamepadRotation)
                 {
                     float3 sideway = cross(viewDir, normalize(camUp));
 
-                    float2 mouseRotation = mIsLeftButtonDown ? mMouseDelta * mSpeedModifier : float2(0.f);
+                    float2 mouseRotation = (mMouseCaptured || mIsLeftButtonDown) ? mMouseDelta * mSpeedModifier : float2(0.f);
                     float2 gamepadRotation = anyGamepadRotation ? mGamepadRightStick * kGamepadRotationSpeed * elapsedTime : float2(0.f);
                     float2 rotation = mouseRotation + gamepadRotation;
 
@@ -343,9 +343,18 @@ namespace Falcor
     template<bool b6DoF>
     bool FirstPersonCameraControllerCommon<b6DoF>::onMouseEvent(const MouseEvent& event)
     {
+        if (event.captured != mMouseCaptured || event.type == MouseEvent::Type::CaptureChanged)
+        {
+            resetInputState();
+            mMouseCaptured = event.captured;
+            mLastMousePos = event.pos;
+        }
+
         bool handled = false;
         switch(event.type)
         {
+        case MouseEvent::Type::CaptureChanged:
+            return true;
         case MouseEvent::Type::ButtonDown:
             if (event.button == Input::MouseButton::Left)
             {
@@ -373,7 +382,7 @@ namespace Falcor
             }
             break;
         case MouseEvent::Type::Move:
-            if(mIsLeftButtonDown || mIsRightButtonDown)
+            if(mMouseCaptured || mIsLeftButtonDown || mIsRightButtonDown)
             {
                 mMouseDelta = event.pos - mLastMousePos;
                 mLastMousePos = event.pos;
@@ -391,10 +400,13 @@ namespace Falcor
     template<bool b6DoF>
     void FirstPersonCameraControllerCommon<b6DoF>::resetInputState()
     {
+        mMouseCaptured      = false;
         mIsLeftButtonDown   = false;
         mIsRightButtonDown  = false;
         mShouldRotate       = false;
         mMovement.reset();
+        mMouseDelta = float2(0.f);
+        mSpeedModifier = 1.f;
 
         mGamepadLeftStick       = float2(0.f);
         mGamepadRightStick      = float2(0.f);

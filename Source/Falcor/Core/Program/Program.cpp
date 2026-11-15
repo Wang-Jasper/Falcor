@@ -335,9 +335,7 @@ bool Program::link() const
         else
         {
             if (!log.empty())
-            {
-                logWarning("Warnings in program:\n{}\n{}", getProgramDescString(), log);
-            }
+                ProgramManager::logProgramWarnings(getProgramDescString(), log);
 
             mpActiveVersion = pVersion;
             return true;

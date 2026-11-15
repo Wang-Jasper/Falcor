@@ -89,14 +89,14 @@ Major UI elements:
 The following is a list of available controls:
 
 `F1` - Show the help message\
+`Left-click viewport` - Capture the mouse for camera rotation; `Esc` releases it\
 `F2` - Show/Hide the GUI\
 `F6` - Show/Hide the graph controls\
 `F9` - Show/Hide the time controls\
 `F10` - Show/Hide FPS\
 `F11` - Show/Hide the menu bar\
 `` ` `` - Show/Hide the scripting console\
-`P` - Enable/Disable profiling\
-`Esc` - Quit
+`P` - Enable/Disable profiling
 
 `Ctrl + O` - Load script\
 `Ctrl + Shift + O` - Load scene\
